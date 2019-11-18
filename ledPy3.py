@@ -4,26 +4,23 @@ from time import sleep
 from signal import pause 
 
 import Game
+
+class Foos
+
 game = Game.Game( "Sean", "Lauren", "Murderface", "Mitch")
 game.goal("red")
 red = LED(18)
 pir = MotionSensor(4)
 score = 0
+
 def count():
-    red.on()
-    score = score + 1
-    return print("counting: ", score)
+   game.goal("red")
+   red.on()
+   
 while True:
-    pir.when_motion = red.on
     pir.when_motion = count
     sleep(2)
-    red.off()
-    if pir.when_motion:
-        print("active fucker")
-#if pir.when_motion:
-
-#score = score + 1
     pir.when_no_motion = red.off
 
 
-    pause()
+   # pause()
