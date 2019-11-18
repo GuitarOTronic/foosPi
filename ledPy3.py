@@ -1,9 +1,11 @@
-
 from gpiozero import LED, MotionSensor
 from gpiozero import PWMLED
 from time import sleep
 from signal import pause 
 
+import Game
+game = Game.Game( "Sean", "Lauren", "Murderface", "Mitch")
+game.goal("red")
 red = LED(18)
 pir = MotionSensor(4)
 score = 0
