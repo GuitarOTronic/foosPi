@@ -1,11 +1,17 @@
 from gpiozero import LED, MotionSensor
-from gpiozero import PWMLED
+import gpiozero
+import RPi.GPIO as GPIO
 from time import sleep
-from signal import pause 
+from signal import pause
+from aiohttp import web
+import socketio
+import asyncio
+import signal
+from Game import Game
 
+import sys
 
-
-class Foos:
+class State:
     def __init__(self):
         self.game = Game("Sean", "Lauren", "Murderface", "Mitch")
 
@@ -15,50 +21,52 @@ class Foos:
 
     def resetGame(self, game):
         #TODO: turn these into Players
+        print("here")
         self.game = Game( "Sean", "Lauren", "Murderface", "Mitch")
 
 
-class Game(Foos):
-    def __init__(self, player1, player2, player3, player4):
-        self.score = { "red":0, "black": 0 }
-        self.redTeam = {"redD": player1, "redO": player2 }
-        self.blackTeam = {"blackD": player3, "blackO":player4}
-
-    def get_teams(self):
-        return self.redTeam, self.blackTeam
-
-    def goal(self, team):
-        self.score[team]=self.score[team] + 1
-        if self.score[team] == 2:
-            self.gameOver()
-        print("Red: ", self.score.get("red"), " Black: ", self.score.get("black"))
-    
-    def gameOver(self):
-        winner = self.getWinner(self)
-        print("Your winner is ", winner, " !")
-        super().resetGame(Foos)
-        #self.resetScore(self)
-
-    def getWinner(self, score):
-        if self.score.get("red") > self.score.get("black"):
-            return "Red"
-        else:
-            return "Black"
-
-    #def resetScore(self, score):
-     #self.score = { "red": 0, "black": 0}
-
-    
-
-
+redPIR = gpiozero.MotionSensor(4)
 red = LED(18)
-redPIR = MotionSensor(4)
 
-game = Foos()
-   
-while True:
-    redPIR.when_motion = game.redGoal
-    sleep(2)
-    #red.off()
-    redPIR.when_no_motion = red.off
-   # pause()
+sio = socketio.AsyncServer(cors_allowed_origins='*', async_handlers=False)
+app = web.Application()
+sio.attach(app)
+
+redPIR.when_motion = red.on
+sio.emit
+async def startMsg():
+    await sio.emit('game start', 'game started')
+
+
+async def index(request):
+    with open('index.html') as f:
+        return web.Response(text=f.read(), content_type='text/html', headers={ 'Access-Control-Allow-Origin': 'http://localhost:3000/'})
+
+@sio.event
+async def connect(sid, environ):
+    await sio.emit('sup', {'response': 'donk'})
+    print('connect ', sid)
+
+@sio.on('goal')
+async def print_message(sid, message):
+    await sio.emit('sup', {'response': 'weeoo'})
+    print("Socket ID: " , sid)
+    print(message)
+
+@sio.on('start game')
+async def startGame(g, players):
+    print('start game event', players)
+    game = Game(players['red_def'], players['red_off'], players['black_def'], players['black_off'], sio)
+    
+   # await sio.emit('start game', 'game started')
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
+    
+    redPIR.when_motion = game.redgoal
+    
+app.router.add_get('/', index)
+
+# We kick off our server
+if __name__ == '__main__':
+    web.run_app(app)
+    
