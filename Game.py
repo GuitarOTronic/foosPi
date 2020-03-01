@@ -31,7 +31,6 @@ class Game():
             return
         print("Red: ", self.score.get("red"), " Black: ", self.score.get("black"))
         #TODO: this is where the errors coming from \/
-        #await self.sio.emit('sup', {'response': 'red scored'})
         return
         
         

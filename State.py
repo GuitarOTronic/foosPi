@@ -32,7 +32,6 @@ sio = socketio.AsyncServer(cors_allowed_origins='*', async_handlers=False)
 app = web.Application()
 sio.attach(app)
 
-redPIR.when_motion = red.on
 sio.emit
 async def startMsg():
     await sio.emit('game start', 'game started')
